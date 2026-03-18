@@ -1,91 +1,38 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Training Result</title>
+</head>
+<body>
+    <h1>Training Result</h1>
 
-{% block content %}
-<section class="page-section">
-    <div class="container">
-        <div class="section-header">
-            <h1>Training Results</h1>
-            <p>Dataset: <strong>{{ dataset.title }}</strong></p>
-        </div>
+    <p><strong>Dataset:</strong> {{ dataset.name }}</p>
 
-        <div class="row g-4 mb-4">
-            {% for result in results %}
-            <div class="col-md-4">
-                <div class="info-card {% if result.is_best %}best-card{% endif %}">
-                    <h4>{{ result.model_name }}</h4>
-                    {% if result.is_best %}
-                        <span class="best-badge">Best Model</span>
-                    {% endif %}
-                    <p class="mb-1"><strong>MAE:</strong> {{ result.mae }}</p>
-                    <p class="mb-1"><strong>MSE:</strong> {{ result.mse }}</p>
-                    <p class="mb-1"><strong>RMSE:</strong> {{ result.rmse }}</p>
-                    <p class="mb-0"><strong>R²:</strong> {{ result.r2 }}</p>
-                </div>
-            </div>
+    <h2>Detected Columns</h2>
+    <ul>
+        {% for col in columns %}
+            <li>{{ col }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Sample Data</h2>
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                {% for col in columns %}
+                    <th>{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+                <tr>
+                    {% for col in columns %}
+                        <td>{{ row|get_item:col }}</td>
+                    {% endfor %}
+                </tr>
             {% endfor %}
-        </div>
-
-        <div class="row g-4">
-            <div class="col-lg-8">
-                <div class="chart-card">
-                    <h4>Actual Sales vs Future Forecast</h4>
-                    <canvas id="forecastChart"></canvas>
-                </div>
-            </div>
-
-            <div class="col-lg-4">
-                <div class="info-card">
-                    <h4>Next 7 Days Prediction</h4>
-                    <div class="prediction-list">
-                        {% for row in future_predictions %}
-                        <div class="prediction-item">
-                            <span>{{ row.date }}</span>
-                            <strong>₹ {{ row.predicted_sales }}</strong>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="mt-4 d-flex gap-3 flex-wrap">
-            <a href="/dashboard/" class="btn btn-dark">Go to Dashboard</a>
-            <a href="/datasets/list/" class="btn btn-outline-primary">Back to Datasets</a>
-        </div>
-    </div>
-</section>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-const actualDates = {{ actual_dates_json|safe }};
-const actualSales = {{ actual_sales_json|safe }};
-const futureDates = {{ future_dates_json|safe }};
-const futureSales = {{ future_sales_json|safe }};
-
-const labels = [...actualDates, ...futureDates];
-const dataValues = [...actualSales, ...futureSales];
-
-new Chart(document.getElementById('forecastChart'), {
-    type: 'line',
-    data: {
-        labels: labels,
-        datasets: [{
-            label: 'Sales / Forecast',
-            data: dataValues,
-            borderWidth: 3,
-            fill: false,
-            tension: 0.3
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                display: true
-            }
-        }
-    }
-});
-</script>
-{% endblock %}
+        </tbody>
+    </table>
+</body>
+</html>

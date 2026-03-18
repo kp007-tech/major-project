@@ -1,50 +1,100 @@
 import pandas as pd
 
 
-def read_dataset(file_path):
-    lower = file_path.lower()
+def load_dataset_file(file_path):
+    """
+    Load dataset from CSV or Excel file.
+    """
+    file_path = str(file_path).lower()
 
-    if lower.endswith(".xlsx") or lower.endswith(".xls"):
+    if file_path.endswith('.csv'):
+        return pd.read_csv(file_path)
+    elif file_path.endswith('.xlsx') or file_path.endswith('.xls'):
         return pd.read_excel(file_path)
-
-    encodings = ["utf-8", "utf-8-sig", "cp1252", "latin1"]
-    for enc in encodings:
-        try:
-            return pd.read_csv(file_path, encoding=enc)
-        except Exception:
-            continue
-
-    raise ValueError("Unable to read file. Upload valid CSV or Excel file.")
+    else:
+        raise ValueError("Unsupported file format. Please upload CSV or Excel file.")
 
 
 def preprocess_data(df):
-    df.columns = [str(col).strip() for col in df.columns]
+    """
+    Preprocess dataset and make sure it has usable date and sales columns.
+    """
 
-    date_candidates = ["Date", "date", "DATE"]
-    sales_candidates = ["Sales", "sales", "SALES", "Revenue", "revenue", "Amount", "amount"]
+    # Normalize column names
+    df.columns = (
+        df.columns.astype(str)
+        .str.strip()
+        .str.lower()
+        .str.replace(" ", "_")
+        .str.replace("-", "_")
+    )
 
-    date_col = next((col for col in date_candidates if col in df.columns), None)
-    sales_col = next((col for col in sales_candidates if col in df.columns), None)
+    print("Detected dataset columns:", df.columns.tolist())
+
+    # Possible column names for date
+    date_candidates = [
+        'date',
+        'order_date',
+        'invoice_date',
+        'sales_date',
+        'day',
+        'timestamp',
+        'datetime'
+    ]
+
+    # Possible column names for sales
+    sales_candidates = [
+        'sales',
+        'sale',
+        'revenue',
+        'amount',
+        'total_sales',
+        'income',
+        'turnover',
+        'profit'
+    ]
+
+    date_col = None
+    sales_col = None
+
+    # Find date column
+    for col in df.columns:
+        if col in date_candidates:
+            date_col = col
+            break
+
+    # Find sales column
+    for col in df.columns:
+        if col in sales_candidates:
+            sales_col = col
+            break
 
     if not date_col or not sales_col:
-        raise ValueError("Dataset must contain a date column and a sales column.")
+        raise ValueError(
+            f"Dataset must contain a valid date column and sales column. "
+            f"Found columns: {df.columns.tolist()}"
+        )
 
-    df = df[[date_col, sales_col]].copy()
-    df.columns = ["Date", "Sales"]
+    # Rename to standard names
+    df = df.rename(columns={
+        date_col: 'date',
+        sales_col: 'sales'
+    })
 
-    df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
-    df["Sales"] = pd.to_numeric(df["Sales"], errors="coerce")
+    # Convert types
+    df['date'] = pd.to_datetime(df['date'], errors='coerce')
+    df['sales'] = pd.to_numeric(df['sales'], errors='coerce')
 
-    df = df.dropna(subset=["Date", "Sales"])
-    df = df.sort_values("Date")
-    df = df.drop_duplicates()
+    # Remove invalid rows
+    df = df.dropna(subset=['date', 'sales'])
 
-    if df.empty or len(df) < 5:
-        raise ValueError("Not enough valid data. Please upload at least 5 valid rows.")
+    if df.empty:
+        raise ValueError("Dataset has no valid rows after cleaning date and sales columns.")
 
-    df["day"] = df["Date"].dt.day
-    df["month"] = df["Date"].dt.month
-    df["year"] = df["Date"].dt.year
-    df["day_of_week"] = df["Date"].dt.dayofweek
+    # Sort by date
+    df = df.sort_values('date')
+
+    # Reset index
+    df = df.reset_index(drop=True)
 
     return df
