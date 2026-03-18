@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <span class="badge bg-warning text-dark px-3 py-2 mb-3">Professional Forecasting Platform</span>
+                <h1 class="hero-title">
+                    Upload, Train, Compare, and Forecast
+                    <span class="highlight-text">Sales with Confidence</span>
+                </h1>
+                <p class="hero-text mt-4">
+                    A complete Django-based sales forecasting system with authentication,
+                    multiple machine learning models, result tracking, dashboard analytics,
+                    and downloadable reporting.
+                </p>
+
+                <div class="mt-4 d-flex flex-wrap gap-3">
+                    {% if user.is_authenticated %}
+                        <a href="/datasets/upload/" class="btn btn-warning btn-lg">Upload Dataset</a>
+                        <a href="/dashboard/" class="btn btn-outline-light btn-lg">Open Dashboard</a>
+                    {% else %}
+                        <a href="/accounts/register/" class="btn btn-warning btn-lg">Get Started</a>
+                        <a href="/accounts/login/" class="btn btn-outline-light btn-lg">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="hero-card">
+                    <h4 class="mb-4">System Features</h4>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="mini-metric">
+                                <p>Authentication</p>
+                                <h5>Ready</h5>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mini-metric">
+                                <p>ML Models</p>
+                                <h5>3 Models</h5>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mini-metric">
+                                <p>Dashboard</p>
+                                <h5>Live View</h5>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mini-metric">
+                                <p>Reports</p>
+                                <h5>PDF Ready</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-4">
+            <div class="col-md-4">
+                <div class="feature-box">
+                    <h5>Upload Sales Data</h5>
+                    <p>Import CSV or Excel datasets, clean them, and prepare them for training.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-box">
+                    <h5>Train Multiple Models</h5>
+                    <p>Run Linear Regression, Decision Tree, and Random Forest on your data.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-box">
+                    <h5>Track Best Results</h5>
+                    <p>Store the best model, evaluation metrics, and future sales predictions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

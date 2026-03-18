@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="page-section">
+    <div class="container">
+        <div class="section-header">
+            <h1>Dashboard</h1>
+            <p>Overview of your uploaded datasets and trained forecasting results.</p>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="summary-card">
+                    <h5>Total Datasets</h5>
+                    <h2>{{ total_datasets }}</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="summary-card">
+                    <h5>Total Trained Models</h5>
+                    <h2>{{ total_models }}</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="summary-card">
+                    <h5>Best Results Saved</h5>
+                    <h2>{{ best_model_count }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="chart-card">
+                    <h4>Best Model R² by Dataset</h4>
+                    <canvas id="dashboardChart"></canvas>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="info-card">
+                    <h4>Best Model Summary</h4>
+                    {% for result in best_results %}
+                    <div class="prediction-item">
+                        <div>
+                            <strong>{{ result.dataset.title }}</strong><br>
+                            <small>{{ result.model_name }}</small>
+                        </div>
+                        <span>R²: {{ result.r2 }}</span>
+                    </div>
+                    {% empty %}
+                    <p>No training results found yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <h3 class="mb-3">Your Datasets</h3>
+            <div class="row g-4">
+                {% for dataset in datasets %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="info-card">
+                        <h4>{{ dataset.title }}</h4>
+                        <p class="text-muted">Uploaded: {{ dataset.uploaded_at }}</p>
+                        <a href="/train/{{ dataset.id }}/" class="btn btn-primary btn-sm">Retrain</a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="empty-box">
+                        <h4>No datasets uploaded</h4>
+                        <p>Upload a dataset to begin training and forecasting.</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const labels = {{ chart_labels_json|safe }};
+const scores = {{ chart_scores_json|safe }};
+
+new Chart(document.getElementById('dashboardChart'), {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'R² Score',
+            data: scores,
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true
+    }
+});
+</script>
+{% endblock %}

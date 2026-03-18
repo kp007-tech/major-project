@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="page-section">
+    <div class="container">
+        <div class="section-header">
+            <h1>Upload Dataset</h1>
+            <p>Import your sales data file to start model training and forecasting.</p>
+        </div>
+
+        <div class="form-card">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-warning btn-lg">Upload and Train</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
