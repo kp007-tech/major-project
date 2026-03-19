@@ -1,84 +1,332 @@
 {% extends 'base.html' %}
 
+{% block title %}Home | NeuroCast AI{% endblock %}
+
 {% block content %}
-<section class="hero-section">
-    <div class="container">
-        <div class="row align-items-center min-vh-75">
-            <div class="col-lg-6 mb-4 mb-lg-0">
-                <span class="badge bg-warning text-dark px-3 py-2 mb-3">Professional Forecasting Platform</span>
-                <h1 class="hero-title">
-                    Upload, Train, Compare, and Forecast
-                    <span class="highlight-text">Sales with Confidence</span>
-                </h1>
-                <p class="hero-text mt-4">
-                    A complete Django-based sales forecasting system with authentication,
-                    multiple machine learning models, result tracking, dashboard analytics,
-                    and downloadable reporting.
-                </p>
+<style>
+    .home-wrap {
+        padding: 18px 0 28px;
+    }
 
-                <div class="mt-4 d-flex flex-wrap gap-3">
-                    {% if user.is_authenticated %}
-                        <a href="/datasets/upload/" class="btn btn-warning btn-lg">Upload Dataset</a>
-                        <a href="/dashboard/" class="btn btn-outline-light btn-lg">Open Dashboard</a>
-                    {% else %}
-                        <a href="/accounts/register/" class="btn btn-warning btn-lg">Get Started</a>
-                        <a href="/accounts/login/" class="btn btn-outline-light btn-lg">Login</a>
-                    {% endif %}
-                </div>
-            </div>
+    .hero-layout {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 28px;
+        align-items: center;
+        min-height: 72vh;
+    }
 
-            <div class="col-lg-6">
-                <div class="hero-card">
-                    <h4 class="mb-4">System Features</h4>
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <div class="mini-metric">
-                                <p>Authentication</p>
-                                <h5>Ready</h5>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="mini-metric">
-                                <p>ML Models</p>
-                                <h5>3 Models</h5>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="mini-metric">
-                                <p>Dashboard</p>
-                                <h5>Live View</h5>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="mini-metric">
-                                <p>Reports</p>
-                                <h5>PDF Ready</h5>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    .hero-copy {
+        max-width: 700px;
+    }
+
+    .hero-title {
+        font-size: clamp(40px, 5vw, 68px);
+        line-height: 1.02;
+        font-weight: 900;
+        letter-spacing: -1.8px;
+        margin-bottom: 16px;
+        color: #0f172a;
+    }
+
+    .hero-subtitle {
+        max-width: 600px;
+        color: #64748b;
+        font-size: 17px;
+        line-height: 1.8;
+        margin-bottom: 0;
+    }
+
+    .hero-card-zone {
+        display: flex;
+        justify-content: center;
+        perspective: 1400px;
+    }
+
+    .analysis-card {
+        width: 100%;
+        max-width: 420px;
+        padding: 28px;
+        border-radius: 30px;
+        position: relative;
+        transform-style: preserve-3d;
+        transform: rotateY(-10deg) rotateX(8deg);
+        background: linear-gradient(145deg, rgba(255,255,255,0.97), rgba(237,242,255,0.92));
+        border: 1px solid rgba(255,255,255,0.88);
+        box-shadow:
+            0 30px 60px rgba(15, 23, 42, 0.16),
+            0 14px 28px rgba(79, 70, 229, 0.10),
+            inset 0 1px 0 rgba(255,255,255,0.95);
+        overflow: hidden;
+        transition: transform 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    .analysis-card:hover {
+        transform: rotateY(-4deg) rotateX(4deg) translateY(-6px);
+        box-shadow:
+            0 36px 70px rgba(15, 23, 42, 0.18),
+            0 18px 36px rgba(79, 70, 229, 0.16),
+            inset 0 1px 0 rgba(255,255,255,0.95);
+    }
+
+    .analysis-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(circle at top left, rgba(79,70,229,0.20), transparent 28%),
+            radial-gradient(circle at bottom right, rgba(6,182,212,0.18), transparent 30%);
+        pointer-events: none;
+    }
+
+    .analysis-card::after {
+        content: "";
+        position: absolute;
+        inset: 14px;
+        border-radius: 22px;
+        border: 1px solid rgba(255,255,255,0.58);
+        pointer-events: none;
+    }
+
+    .card-top {
+        position: relative;
+        z-index: 2;
+        margin-bottom: 22px;
+    }
+
+    .card-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 14px;
+        border-radius: 999px;
+        background: rgba(79, 70, 229, 0.10);
+        color: #4338ca;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-bottom: 14px;
+    }
+
+    .card-title {
+        font-size: 28px;
+        font-weight: 900;
+        line-height: 1.15;
+        margin-bottom: 10px;
+        color: #0f172a;
+    }
+
+    .card-text {
+        color: #64748b;
+        font-size: 15px;
+        line-height: 1.7;
+        margin-bottom: 20px;
+    }
+
+    .mini-points {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 24px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .mini-point {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        border-radius: 16px;
+        background: rgba(255,255,255,0.75);
+        border: 1px solid rgba(148,163,184,0.16);
+        color: #334155;
+        font-size: 14px;
+        font-weight: 700;
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+    }
+
+    .mini-point span {
+        font-size: 16px;
+    }
+
+    .analysis-btn {
+        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 16px 20px;
+        border-radius: 18px;
+        text-decoration: none;
+        color: white;
+        font-size: 15px;
+        font-weight: 900;
+        letter-spacing: 0.2px;
+        background: linear-gradient(135deg, #4f46e5, #06b6d4);
+        box-shadow:
+            0 18px 34px rgba(79, 70, 229, 0.28),
+            inset 0 1px 0 rgba(255,255,255,0.18);
+        position: relative;
+        overflow: hidden;
+        z-index: 2;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .analysis-btn::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, transparent, rgba(255,255,255,0.30), transparent);
+        transform: translateX(-120%);
+        transition: transform 0.65s ease;
+    }
+
+    .analysis-btn:hover::before {
+        transform: translateX(120%);
+    }
+
+    .analysis-btn:hover {
+        transform: translateY(-2px);
+        box-shadow:
+            0 24px 40px rgba(79, 70, 229, 0.34),
+            inset 0 1px 0 rgba(255,255,255,0.18);
+    }
+
+    .essential-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-top: 18px;
+    }
+
+    .essential-card {
+        padding: 22px;
+        border-radius: 24px;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .essential-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 22px 42px rgba(15, 23, 42, 0.11);
+    }
+
+    .essential-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+        font-size: 22px;
+        margin-bottom: 14px;
+        background: linear-gradient(135deg, rgba(79,70,229,0.12), rgba(6,182,212,0.12));
+    }
+
+    .essential-card h3 {
+        font-size: 19px;
+        margin-bottom: 8px;
+        color: #0f172a;
+    }
+
+    .essential-card p {
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    @media (max-width: 1024px) {
+        .hero-layout,
+        .essential-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .hero-layout {
+            min-height: auto;
+        }
+
+        .hero-card-zone {
+            justify-content: flex-start;
+        }
+
+        .analysis-card {
+            max-width: 100%;
+            transform: none;
+        }
+
+        .analysis-card:hover {
+            transform: translateY(-4px);
+        }
+    }
+
+    @media (max-width: 640px) {
+        .hero-title {
+            font-size: 38px;
+            letter-spacing: -1px;
+        }
+
+        .hero-subtitle {
+            font-size: 15px;
+        }
+
+        .analysis-card,
+        .essential-card {
+            padding: 20px;
+        }
+    }
+</style>
+
+<section class="home-wrap">
+    <div class="hero-layout">
+        <div class="hero-copy">
+            <div class="eyebrow">AI-Powered Sales Forecasting</div>
+            <h1 class="hero-title">Smart analysis for better business decisions.</h1>
+            <p class="hero-subtitle">
+                Upload your dataset, generate clean insights, and forecast future sales with a simple and premium experience.
+            </p>
         </div>
 
-        <div class="row g-4 mt-4">
-            <div class="col-md-4">
-                <div class="feature-box">
-                    <h5>Upload Sales Data</h5>
-                    <p>Import CSV or Excel datasets, clean them, and prepare them for training.</p>
+        <div class="hero-card-zone">
+            <div class="analysis-card">
+                <div class="card-top">
+                    <div class="card-badge">Quick Start</div>
+                    <div class="card-title">Start Analysis</div>
+                    <div class="card-text">
+                        Upload your file and get only the most important results — fast, clear, and useful.
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="feature-box">
-                    <h5>Train Multiple Models</h5>
-                    <p>Run Linear Regression, Decision Tree, and Random Forest on your data.</p>
+
+                <div class="mini-points">
+                    <div class="mini-point"><span>📁</span> Upload dataset</div>
+                    <div class="mini-point"><span>📊</span> View key insights</div>
+                    <div class="mini-point"><span>🔮</span> Predict future sales</div>
                 </div>
+
+                {% if user.is_authenticated %}
+                    <a href="{% url 'upload_and_analyze' %}" class="analysis-btn">Start Analysis</a>
+                {% else %}
+                    <a href="{% url 'login' %}?next={% url 'upload_and_analyze' %}" class="analysis-btn">Start Analysis</a>
+                {% endif %}
             </div>
-            <div class="col-md-4">
-                <div class="feature-box">
-                    <h5>Track Best Results</h5>
-                    <p>Store the best model, evaluation metrics, and future sales predictions.</p>
-                </div>
-            </div>
+        </div>
+    </div>
+
+    <div class="essential-grid">
+        <div class="glass-card essential-card">
+            <div class="essential-icon">📊</div>
+            <h3>Key Insights</h3>
+            <p>See the most important sales and product details without too much extra information.</p>
+        </div>
+
+        <div class="glass-card essential-card">
+            <div class="essential-icon">🤖</div>
+            <h3>AI Support</h3>
+            <p>Get simple AI-based recommendations to improve business planning and stock decisions.</p>
+        </div>
+
+        <div class="glass-card essential-card">
+            <div class="essential-icon">📄</div>
+            <h3>Export Report</h3>
+            <p>Download a clean report with the essential results you actually need.</p>
         </div>
     </div>
 </section>

@@ -1,0 +1,482 @@
+{% extends 'base.html' %}
+
+{% block title %}Analysis Report | NeuroCast AI{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<style>
+    .report-wrap {
+        padding: 14px 0 30px;
+    }
+
+    .hero {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 22px;
+        flex-wrap: wrap;
+        padding: 30px;
+        margin-bottom: 22px;
+    }
+
+    .dataset-info {
+        min-width: 240px;
+        padding: 18px;
+        border-radius: 20px;
+        background: rgba(255,255,255,0.88);
+        border: 1px solid rgba(148,163,184,0.16);
+    }
+
+    .dataset-info small {
+        display: block;
+        color: #64748b;
+        margin-bottom: 6px;
+    }
+
+    .dataset-info strong {
+        display: block;
+        font-size: 18px;
+        word-break: break-word;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 22px;
+    }
+
+    .stat-card {
+        padding: 22px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 24px 48px rgba(15, 23, 42, 0.12);
+    }
+
+    .stat-card::after {
+        content: "";
+        position: absolute;
+        width: 140px;
+        height: 140px;
+        right: -60px;
+        top: -60px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(79,70,229,0.12), transparent 65%);
+        pointer-events: none;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
+
+    .stat-value {
+        font-size: 30px;
+        font-weight: 900;
+        line-height: 1.1;
+        margin-bottom: 6px;
+    }
+
+    .stat-sub {
+        color: #94a3b8;
+        font-size: 13px;
+        line-height: 1.55;
+    }
+
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1.35fr 1fr;
+        gap: 20px;
+        margin-bottom: 22px;
+    }
+
+    .secondary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 22px;
+    }
+
+    .card {
+        padding: 24px;
+    }
+
+    .card h2 {
+        font-size: 24px;
+        margin-bottom: 6px;
+    }
+
+    .sub {
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.65;
+        margin-bottom: 18px;
+    }
+
+    .chart-box {
+        padding: 14px;
+        border-radius: 20px;
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(148,163,184,0.14);
+    }
+
+    canvas {
+        width: 100% !important;
+        max-height: 360px;
+    }
+
+    .list-card,
+    .simple-list,
+    .prediction-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .list-item,
+    .simple-item,
+    .prediction-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: rgba(248,250,252,0.95);
+        border: 1px solid rgba(148,163,184,0.15);
+    }
+
+    .pill {
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .pill.success {
+        background: rgba(16,185,129,0.12);
+        color: #047857;
+    }
+
+    .pill.danger {
+        background: rgba(239,68,68,0.12);
+        color: #b91c1c;
+    }
+
+    .pill.warning {
+        background: rgba(245,158,11,0.12);
+        color: #b45309;
+    }
+
+    .empty {
+        padding: 18px;
+        border-radius: 16px;
+        text-align: center;
+        color: #64748b;
+        background: rgba(248,250,252,0.95);
+        border: 1px dashed rgba(148,163,184,0.28);
+    }
+
+    .ai-content {
+        white-space: pre-line;
+        color: #334155;
+        line-height: 1.8;
+        font-size: 15px;
+        background: rgba(255,255,255,0.88);
+        border: 1px solid rgba(148,163,184,0.16);
+        border-radius: 20px;
+        padding: 18px;
+    }
+
+    @media (max-width: 1100px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .main-grid,
+        .secondary-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 680px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<section class="report-wrap">
+    <div class="glass-card hero">
+        <div>
+            <div class="eyebrow">AI-Powered Business Intelligence</div>
+            <h1 class="page-title" style="font-size:42px;">Premium Report Dashboard</h1>
+            <p class="page-subtitle">
+                Review top-selling products, weak performers, sales trends, forecast outputs,
+                and AI-driven recommendations from your uploaded dataset.
+            </p>
+        </div>
+
+        <div class="dataset-info">
+            <small>Current Dataset</small>
+            <strong>{{ dataset.title }}</strong>
+        </div>
+    </div>
+
+    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:22px;">
+        <a href="{% url 'home' %}" class="btn-secondary">Home</a>
+        <a href="{% url 'upload_and_analyze' %}" class="btn-secondary">Upload New</a>
+        <a href="{% url 'download_report_pdf' dataset.id %}" class="btn">Download PDF</a>
+    </div>
+
+    {% if report.error %}
+        <div class="glass-card card">
+            <h2>Analysis Error</h2>
+            <p class="sub">{{ report.error }}</p>
+        </div>
+    {% else %}
+        <section class="stats-grid">
+            <div class="glass-card stat-card">
+                <div class="stat-label">Total Products</div>
+                <div class="stat-value">{{ report.details.total_products|default:0 }}</div>
+                <div class="stat-sub">Products found in the uploaded dataset.</div>
+            </div>
+
+            <div class="glass-card stat-card">
+                <div class="stat-label">Total Sales Value</div>
+                <div class="stat-value">{{ report.details.total_sales_value|default:0 }}</div>
+                <div class="stat-sub">Combined analyzed sales or revenue value.</div>
+            </div>
+
+            <div class="glass-card stat-card">
+                <div class="stat-label">Top Picks</div>
+                <div class="stat-value">{{ report.recommendation.buy_more|length }}</div>
+                <div class="stat-sub">Products recommended for stronger focus.</div>
+            </div>
+
+            <div class="glass-card stat-card">
+                <div class="stat-label">Festival Focus</div>
+                <div class="stat-value" style="font-size:20px;">{{ report.recommendation.festival|default:"N/A" }}</div>
+                <div class="stat-sub">Seasonal direction based on your trend data.</div>
+            </div>
+        </section>
+
+        <section class="main-grid">
+            <div class="glass-card card">
+                <h2>Top Selling Products</h2>
+                <p class="sub">Visual summary of your strongest-performing items.</p>
+                <div class="chart-box">
+                    <canvas id="topProductsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-card card">
+                <h2>Performance Summary</h2>
+                <p class="sub">Best-selling items ranked from your current report.</p>
+
+                <div class="list-card">
+                    {% for key, value in report.details.top_selling.items %}
+                        <div class="list-item">
+                            <strong>{{ key }}</strong>
+                            <span class="pill success">{{ value }}</span>
+                        </div>
+                    {% empty %}
+                        <div class="empty">No top-selling product data available.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="secondary-grid">
+            <div class="glass-card card">
+                <h2>Low Selling Products</h2>
+                <p class="sub">Items that may need optimization or lower inventory priority.</p>
+
+                <div class="simple-list">
+                    {% for key, value in report.details.low_selling.items %}
+                        <div class="simple-item">
+                            <strong>{{ key }}</strong>
+                            <span class="pill danger">{{ value }}</span>
+                        </div>
+                    {% empty %}
+                        <div class="empty">No low-selling product data available.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="glass-card card">
+                <h2>Zero Sales Items</h2>
+                <p class="sub">Products with no measurable selling activity.</p>
+
+                <div class="simple-list">
+                    {% for item in report.details.zero_sales %}
+                        <div class="simple-item">
+                            <strong>{{ item }}</strong>
+                            <span class="pill warning">0</span>
+                        </div>
+                    {% empty %}
+                        <div class="empty">No zero-sales products found.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="glass-card card">
+                <h2>Business Actions</h2>
+                <p class="sub">Clear next steps based on the current analysis.</p>
+
+                <div class="simple-list">
+                    {% for item in report.recommendation.buy_more %}
+                        <div class="simple-item">
+                            <strong>{{ item }}</strong>
+                            <span class="pill success">Buy More</span>
+                        </div>
+                    {% empty %}
+                        <div class="empty">No buy-more recommendations available.</div>
+                    {% endfor %}
+
+                    {% for item in report.recommendation.avoid %}
+                        <div class="simple-item">
+                            <strong>{{ item }}</strong>
+                            <span class="pill danger">Avoid</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="main-grid">
+            <div class="glass-card card">
+                <h2>Monthly Sales Trend</h2>
+                <p class="sub">Trend chart for monthly business performance.</p>
+                <div class="chart-box">
+                    <canvas id="monthlySalesChart"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-card card">
+                <h2>Future Sales Prediction</h2>
+                <p class="sub">Forecasted sales estimates for upcoming days.</p>
+
+                {% if prediction.error %}
+                    <div class="empty">{{ prediction.error }}</div>
+                {% else %}
+                    <div class="prediction-list">
+                        {% for row in prediction.predictions %}
+                            <div class="prediction-item">
+                                <strong>{{ row.date }}</strong>
+                                <span class="pill success">{{ row.predicted_sales }}</span>
+                            </div>
+                        {% empty %}
+                            <div class="empty">Prediction data is not available.</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="glass-card card">
+            <h2>🤖 AI Business Recommendations</h2>
+            <p class="sub">
+                Strategic guidance generated from your uploaded data, trend analysis, and future forecast.
+            </p>
+            <div class="ai-content">{{ ai_insight }}</div>
+        </section>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{% if not report.error %}
+<script>
+    const topSellingData = {
+        labels: [
+            {% for key, value in report.details.top_selling.items %}
+                "{{ key|escapejs }}",
+            {% endfor %}
+        ],
+        values: [
+            {% for key, value in report.details.top_selling.items %}
+                {{ value|default:0 }},
+            {% endfor %}
+        ]
+    };
+
+    const monthlySalesData = {
+        labels: [
+            {% if report.details.monthly_sales %}
+                {% for key, value in report.details.monthly_sales.items %}
+                    "{{ key|escapejs }}",
+                {% endfor %}
+            {% elif prediction.predictions %}
+                {% for row in prediction.predictions %}
+                    "{{ row.date|escapejs }}",
+                {% endfor %}
+            {% endif %}
+        ],
+        values: [
+            {% if report.details.monthly_sales %}
+                {% for key, value in report.details.monthly_sales.items %}
+                    {{ value|default:0 }},
+                {% endfor %}
+            {% elif prediction.predictions %}
+                {% for row in prediction.predictions %}
+                    {{ row.predicted_sales|default:0 }},
+                {% endfor %}
+            {% endif %}
+        ]
+    };
+
+    if (document.getElementById("topProductsChart") && topSellingData.labels.length) {
+        new Chart(document.getElementById("topProductsChart"), {
+            type: "bar",
+            data: {
+                labels: topSellingData.labels,
+                datasets: [{
+                    label: "Sales",
+                    data: topSellingData.values,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    if (document.getElementById("monthlySalesChart") && monthlySalesData.labels.length) {
+        new Chart(document.getElementById("monthlySalesChart"), {
+            type: "line",
+            data: {
+                labels: monthlySalesData.labels,
+                datasets: [{
+                    label: "Trend",
+                    data: monthlySalesData.values,
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+    }
+</script>
+{% endif %}
+{% endblock %}

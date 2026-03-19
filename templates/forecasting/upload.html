@@ -1,9 +1,161 @@
-{% extends 'base.html' %}
-{% block content %}
-<h2>Upload Sales Dataset</h2>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Upload</button>
-</form>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Dataset | NeuroCast AI</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            min-height: 100vh;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 60px;
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: bold;
+            background: linear-gradient(
+                90deg,
+                red, orange, yellow, green, cyan, blue, violet
+            );
+            background-size: 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow 6s linear infinite;
+        }
+
+        @keyframes rainbow {
+            0% { background-position: 0% }
+            100% { background-position: 200% }
+        }
+
+        .nav-buttons a {
+            margin-left: 15px;
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .login {
+            color: #334155;
+        }
+
+        .logout {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* MAIN CONTAINER */
+        .container {
+            max-width: 600px;
+            margin: 60px auto;
+            padding: 40px;
+            border-radius: 20px;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+
+        /* UPLOAD BOX */
+        .upload-box {
+            border: 2px dashed #cbd5f5;
+            padding: 40px;
+            border-radius: 16px;
+            background: #f8fafc;
+            transition: 0.3s;
+        }
+
+        .upload-box:hover {
+            background: #eef2ff;
+            border-color: #6366f1;
+        }
+
+        input[type="file"] {
+            margin-top: 15px;
+        }
+
+        /* BUTTON */
+        .btn {
+            margin-top: 25px;
+            padding: 14px 28px;
+            border-radius: 12px;
+            border: none;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(90deg, #6366f1, #38bdf8);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* NOTE */
+        .note {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="logo">NeuroCast AI</div>
+
+        <div class="nav-buttons">
+            <a href="/" class="login">Home</a>
+            <a href="/logout/" class="logout">Logout</a>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="container">
+        <h2>📤 Upload Your Dataset</h2>
+        <p>Upload CSV, Excel, ZIP or PDF to generate insights & predictions</p>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="upload-box">
+                {{ form.file }}
+                <div class="note">
+                    Supported: CSV • Excel • ZIP • PDF
+                </div>
+            </div>
+
+            <button type="submit" class="btn">
+                🚀 Analyze Now
+            </button>
+        </form>
+    </div>
+
+</body>
+</html>

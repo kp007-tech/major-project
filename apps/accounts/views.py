@@ -11,7 +11,7 @@ def register_view(request):
         login(request, user)
         return redirect('dashboard')
 
-    return render(request, 'accounts/register.html', {'form': form})
+    return render(request, 'auth/register.html', {'form': form})
 
 
 def login_view(request):
@@ -25,7 +25,7 @@ def login_view(request):
             login(request, user)
             return redirect('dashboard')
 
-    return render(request, 'accounts/login.html')
+    return render(request, 'auth/login.html')
 
 
 def logout_view(request):
